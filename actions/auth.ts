@@ -36,3 +36,26 @@ export async function studentSignUp(formData: FormData) {
     revalidatePath("/", "layout");
     return { error: null, status: 200, user: data.user };
 }
+
+export async function studentLogIn(formData: FormData) {
+    const supabase = await createClient();
+
+    const credentials = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+    };
+    const { data, error } = await supabase.auth.signInWithPassword(credentials);
+
+    if (error) {
+        return { error: error.message, status: error.status, user: null };
+    }
+    //👇🏻 only instructors have an image attribute
+    if (data && data.user.user_metadata.image) {
+        return { error: "You are not a student", status: 400, user: null };
+    }
+
+    //👉🏻 create a student row and add to the database
+
+    revalidatePath("/", "layout");
+    return { error: null, status: 200, user: data.user };
+}
