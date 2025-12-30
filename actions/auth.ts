@@ -27,4 +27,12 @@ export async function studentSignUp(formData: FormData) {
     });
 
     //👉🏻 return user or error object
+     if (error) {
+        return { error: error.message, status: error.status, user: null };
+    } else if (data.user?.identities?.length === 0) {
+        return { error: "User already exists", status: 409, user: null };
+    }
+
+    revalidatePath("/", "layout");
+    return { error: null, status: 200, user: data.user };
 }
