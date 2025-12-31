@@ -80,3 +80,21 @@ export async function studentLogIn(formData: FormData) {
     revalidatePath("/", "layout");
     return { error: null, status: 200, user: data.user };
 }
+
+export async function instructorSignUp(formData: FormData) {
+    const supabase = await createClient();
+
+    //👇🏻 get user credentials from the form
+    const credentials = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+        interest: formData.get("interest") as string,
+        name: formData.get("name") as string,
+        occupation: formData.get("occupation") as string,
+        bio: formData.get("bio") as string,
+        url: formData.get("url") as string,
+        image: formData.get("image") as File,
+    };
+
+    //👉🏻 following code snippet below
+}
