@@ -96,5 +96,38 @@ export async function instructorSignUp(formData: FormData) {
         image: formData.get("image") as File,
     };
 
+    const { data: imageData, error: imageError } = await supabase.storage
+        .from("headshots")
+        .upload(`${crypto.randomUUID()}/image`, credentials.image);
+
+    if (imageError) {
+        return { error: imageError.message, status: 500, user: null };
+    }
+    //👇🏻 get the image URL
+    const imageURL = `${process.env.STORAGE_URL!}${imageData.fullPath}`;
+
+    //👇🏻 authenticate user as instructor
+    const { data, error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+            data: {
+                interest: credentials.interest,
+                name: credentials.name,
+                occupation: credentials.occupation,
+                bio: credentials.bio,
+                url: credentials.url,
+                image: imageURL,
+            },
+        },
+    });
+
+    //👇🏻 return user or error object
+    if (error) {
+        return { error: error.message, status: error.status, user: null };
+    }
+    revalidatePath("/", "layout");
+    return { error: null, status: 200, user: data.user };
+
     //👉🏻 following code snippet below
 }
