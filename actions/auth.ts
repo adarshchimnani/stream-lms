@@ -206,3 +206,30 @@ export async function logOut() {
 	revalidatePath("/", "layout");
 	redirect("/student/auth/login");
 }
+
+export async function getDashboardData() {
+	const { user } = await getUserSession()
+	const supabase = await createClient();
+
+	if (!user) { 
+		return { error: "No session found", status: 404 };
+	}
+	const { data: announcementData, error } = await supabase
+		.from("announcements")
+		.select('id')
+		.eq("author_id", user?.id);
+	
+	const { data: followersData, error: followersError } = await supabase.from("instructors").select("followers").eq("id", user?.id).single()
+	
+	if (error || followersError) {
+		return { error: error?.message || followersError?.message, status: 500 };
+	}
+	if (!followersData) {
+		return { error: "No followers found", status: 404 };
+	}
+	if (!announcementData) {
+		return { error: "No announcements found", status: 404 };
+	}
+
+	return { followers_count: followersData.followers.length , announcements_count: announcementData.length, status: 200 };
+}
