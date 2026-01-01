@@ -194,3 +194,15 @@ export async function getUserSession() {
 	}
 	return { error: null, status: 200, user: data.user };
 }
+
+export async function logOut() {
+	const supabase = await createClient();
+	const { error } = await supabase.auth.signOut();
+
+	if (error) {
+		redirect("/error");
+	}
+
+	revalidatePath("/", "layout");
+	redirect("/student/auth/login");
+}
