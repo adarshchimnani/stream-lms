@@ -17,8 +17,37 @@ export const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
         //👉🏻 get user object from Supabase
         //👉🏻 set Stream user data
         // 👉🏻 initialize Stream video client using the Stream API key, Stream user data, and token Provider
-        
-    
+        const { data, error } = await supabase.auth.getUser();
+        const { user } = data;
+        if (error || !user || !apiKey) return;
+        if (!tokenProvider) return;
+
+        let streamUser;
+
+        if (user.user_metadata?.image) {
+            streamUser = {
+                // 👇🏻 user is an instructor
+                id: user.id,
+                name: user.user_metadata?.name,
+                image: user.user_metadata?.image,
+            };
+        } else {
+            // 👇🏻 user is a student
+            streamUser = {
+                id: user.id,
+                name: user.user_metadata?.name,
+            };
+        }
+
+        //👇🏻 create s Stream video client
+        const client = new StreamVideoClient({
+            apiKey,
+            user: streamUser,
+            tokenProvider,
+        });
+
+        setVideoClient(client);
+
     }, [supabase.auth]);
 
     useEffect(() => {
